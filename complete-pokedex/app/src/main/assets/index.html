@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220"><title>DexQuest Complete</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#162238;--line:#2b3a54;--muted:#aabbd0;--accent:#7de6c2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f2f7ff;font:15px system-ui,-apple-system,sans-serif}header{padding:22px 18px;background:linear-gradient(135deg,#19364b,#111c31);border-bottom:1px solid var(--line)}h1{margin:0 0 8px;font-size:27px}header p{color:var(--muted);margin:0}main{max-width:1120px;margin:auto;padding:16px}.toolbar{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px}input,select,button{background:var(--panel);border:1px solid var(--line);color:white;border-radius:10px;padding:12px;font:inherit}input{flex:3;min-width:180px}select{flex:1;min-width:130px}button{cursor:pointer}.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}.stat{background:var(--panel);border:1px solid var(--line);padding:12px 16px;border-radius:12px}.stat b{color:var(--accent)}.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:16px;padding:12px;background:var(--panel);text-align:center}.card img{width:110px;height:110px;object-fit:contain}.card h3{font-size:16px;margin:5px 0}.number{color:var(--muted);font-size:12px}.type{display:inline-block;border-radius:20px;background:#29455e;padding:4px 9px;margin:4px 2px;font-size:11px}.controls{display:flex;gap:5px;justify-content:center;margin-top:10px}.controls button{font-size:12px;padding:7px}.active{background:#236b55;color:white}.muted{color:var(--muted)}dialog{background:var(--panel);color:#f2f7ff;border:1px solid var(--line);border-radius:16px;max-width:430px;width:94%;max-height:85vh;overflow:auto}dialog::backdrop{background:#000b}.detail{line-height:1.8}.close{float:right}#loadmore{display:block;margin:20px auto}footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+</style></head><body>
+<header><h1>◉ DexQuest <span style="color:#7de6c2">Complete</span></h1><p>National Pokédex • Generations 1–9 • Unofficial fan-made companion</p></header>
+<main><div class="stats"><div class="stat">Loaded <b id="total">0</b></div><div class="stat">Caught <b id="caughtCount">0</b></div><div class="stat">Favorites <b id="favoriteCount">0</b></div></div>
+<div class="toolbar"><input id="search" placeholder="Search name or National Dex number…" aria-label="Search"><select id="generation" aria-label="Generation"><option value="0">All generations</option><option value="1">Kanto (1)</option><option value="2">Johto (2)</option><option value="3">Hoenn (3)</option><option value="4">Sinnoh (4)</option><option value="5">Unova (5)</option><option value="6">Kalos (6)</option><option value="7">Alola (7)</option><option value="8">Galar (8)</option><option value="9">Paldea (9)</option></select><select id="status" aria-label="Status"><option value="all">All</option><option value="caught">Caught</option><option value="missing">Missing</option><option value="favorite">Favorites</option></select></div>
+<p id="message" class="muted">Loading species list from PokéAPI… Internet required for first fetch.</p><section id="cards" class="cards"></section><button id="loadmore" hidden>Load more</button></main>
+<dialog id="detail"><button class="close" id="close">Close ×</button><div id="detailContent"></div></dialog>
+<footer>DexQuest is not affiliated with Nintendo, GAME FREAK or The Pokémon Company. Data provided by PokéAPI. Your checklist stays on this device.</footer>
+<script>
+'use strict';
+const MAX=1025, PAGE=60, BOUNDS=[0,151,251,386,493,649,721,809,905,1025];
+const el=id=>document.getElementById(id);
+function load(name){try{return new Set(JSON.parse(localStorage.getItem('dexquest-complete-'+name)||'[]'))}catch(e){return new Set()}}
+const caught=load('caught'), favorites=load('favorites');
+let species=[],filtered=[],visible=0,selected=null;
+function store(name,set){localStorage.setItem('dexquest-complete-'+name,JSON.stringify([...set]))}
+function number(id){return '#'+String(id).padStart(4,'0')}
+function label(name){return name.split('-').map(p=>p[0].toUpperCase()+p.slice(1)).join(' ')}
+function sprite(id){return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/'+id+'.png'}
+function generation(id){return BOUNDS.findIndex((max,index)=>index>0&&id<=max)}
+function updateStats(){el('total').textContent=species.length;el('caughtCount').textContent=caught.size;el('favoriteCount').textContent=favorites.size}
+function toggle(set,key,id){set.has(id)?set.delete(id):set.add(id);store(key,set);updateStats();filter()}
+function card(mon){
+ const div=document.createElement('article');div.className='card';
+ const img=document.createElement('img');img.loading='lazy';img.alt=label(mon.name);img.src=sprite(mon.id);
+ const num=document.createElement('div');num.className='number';num.textContent=number(mon.id)+' • Gen '+generation(mon.id);
+ const title=document.createElement('h3');title.textContent=label(mon.name);
+ const controls=document.createElement('div');controls.className='controls';
+ const catchBtn=document.createElement('button');catchBtn.textContent=caught.has(mon.id)?'✓ Caught':'○ Catch';catchBtn.className=caught.has(mon.id)?'active':'';
+ catchBtn.onclick=()=>toggle(caught,'caught',mon.id);
+ const favBtn=document.createElement('button');favBtn.textContent=favorites.has(mon.id)?'★':'☆';favBtn.ariaLabel='Toggle favorite';favBtn.className=favorites.has(mon.id)?'active':'';
+ favBtn.onclick=()=>toggle(favorites,'favorites',mon.id);
+ const info=document.createElement('button');info.textContent='Details';info.onclick=()=>details(mon);
+ controls.append(catchBtn,favBtn,info);div.append(img,num,title,controls);return div;
+}
+function appendPage(){let end=Math.min(visible+PAGE,filtered.length);const fragment=document.createDocumentFragment();for(let i=visible;i<end;i++)fragment.appendChild(card(filtered[i]));el('cards').appendChild(fragment);visible=end;el('loadmore').hidden=visible>=filtered.length}
+function filter(){
+ const q=el('search').value.trim().toLowerCase(),gen=Number(el('generation').value),status=el('status').value;
+ filtered=species.filter(m=>(!q||m.name.includes(q)||number(m.id).includes(q)||String(m.id)===q)&&(!gen||generation(m.id)===gen)&&(status==='all'||status==='caught'&&caught.has(m.id)||status==='missing'&&!caught.has(m.id)||status==='favorite'&&favorites.has(m.id)));
+ visible=0;el('cards').replaceChildren();appendPage();el('message').textContent=filtered.length+' Pokémon found';
+}
+async function details(mon){
+ selected=mon;el('detailContent').textContent='Loading…';el('detail').showModal();
+ try{
+  const res=await fetch('https://pokeapi.co/api/v2/pokemon/'+mon.id+'/');
+  if(!res.ok)throw Error('HTTP '+res.status);
+  const p=await res.json();if(selected!==mon)return;
+  const body=document.createElement('div');body.className='detail';
+  const img=document.createElement('img');img.src=sprite(mon.id);img.alt=label(mon.name);img.style.cssText='width:160px;height:160px;object-fit:contain;display:block;margin:auto';
+  const h=document.createElement('h2');h.textContent=number(mon.id)+' '+label(mon.name);
+  const type=document.createElement('p');type.textContent='Types: '+p.types.map(x=>label(x.type.name)).join(', ');
+  const dimension=document.createElement('p');dimension.textContent='Height: '+(p.height/10)+' m • Weight: '+(p.weight/10)+' kg';
+  const stats=document.createElement('p');stats.textContent=p.stats.map(s=>label(s.stat.name)+': '+s.base_stat).join(' • ');
+  const abilities=document.createElement('p');abilities.textContent='Abilities: '+p.abilities.map(x=>label(x.ability.name)).join(', ');
+  body.append(img,h,type,dimension,abilities,stats);el('detailContent').replaceChildren(body);
+ }catch(e){el('detailContent').textContent='Details unavailable offline. Check your network connection.'}
+}
+async function init(){
+ try{
+  const response=await fetch('https://pokeapi.co/api/v2/pokemon-species?limit='+MAX+'&offset=0');
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const data=await response.json();species=data.results.map((m,i)=>({id:i+1,name:m.name}));localStorage.setItem('dexquest-complete-species',JSON.stringify(species));
+ }catch(e){try{species=JSON.parse(localStorage.getItem('dexquest-complete-species')||'[]')}catch(_){species=[]}}
+ updateStats();filter();
+ if(!species.length)el('message').textContent='Could not load Pokédex. Connect to the internet and relaunch.';
+}
+['search','generation','status'].forEach(id=>el(id).addEventListener(id==='search'?'input':'change',filter));
+el('loadmore').onclick=appendPage;el('close').onclick=()=>el('detail').close();
+window.dexBack=()=>{if(el('detail').open){el('detail').close();return true}return false};
+init();
+</script></body></html>
