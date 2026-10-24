@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#091320">
+  <meta name="description" content="DexQuest GO: an offline Pokémon GO companion for collection, shiny tracking, evolution goals and safer storage searches.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://raw.githubusercontent.com; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <title>DexQuest GO</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="species.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-ball" aria-hidden="true"><i></i></div><div><strong>DexQuest <em>GO</em></strong><span>Unofficial trainer companion</span></div></div>
+    <div class="nav-label">TRAINER TOOLS</div>
+    <nav class="desktop-nav" id="side-nav" aria-label="Main navigation">
+      <button class="nav-btn selected" data-page="home"><span>⌂</span> Dashboard</button>
+      <button class="nav-btn" data-page="dex"><span>▦</span> Pokédex</button>
+      <button class="nav-btn" data-page="shiny"><span>✦</span> Shiny collection</button>
+      <button class="nav-btn" data-page="planner"><span>◈</span> Candy planner</button>
+      <button class="nav-btn" data-page="storage"><span>⚙</span> Storage cleaner</button>
+      <button class="nav-btn" data-page="settings"><span>↕</span> Backup & settings</button>
+    </nav>
+    <div class="side-note"><strong>⚡ Independent of Pokémon GO</strong><p>Your checklist and plans stay on your phone. No account login, location spoofing or automated transfers.</p></div>
+  </aside>
+  <main class="main" id="main">
+    <header class="topbar"><div><div class="breadcrumb">DEXQUEST / <span id="breadcrumb-page">DASHBOARD</span></div><div class="mobile-wordmark">DEXQUEST <span>GO</span></div></div><div class="top-actions"><span class="offline-pill">● Local saves</span><button class="top-settings" data-page="settings" aria-label="Open settings">⚙</button></div></header>
+
+    <section class="page active" id="page-home" aria-label="Dashboard">
+      <div class="hero"><div><div class="eyebrow">YOUR TRAINER HQ</div><h1>Your next catch,<br><span>one step closer.</span></h1><p>Track your GO collection, save shiny discoveries, plan evolutions and generate storage search filters — without connecting to your game account.</p><div class="hero-buttons"><button class="btn main-btn" data-page="dex">Open Pokédex →</button><button class="btn ghost-btn" data-page="planner">Plan an evolution</button></div></div><div class="hero-ball" aria-hidden="true"><div class="hero-ball-middle"></div></div></div>
+      <div class="stats-grid">
+        <div class="stat-card highlight"><div class="stat-label">NATIONAL DEX ENTRIES TRACKED</div><div class="stat-number" id="stat-caught">0 <small>/ 1025</small></div><div class="progress-track"><div id="progress-caught" class="progress-fill"></div></div><div class="stat-foot">Your manually recorded catches</div></div>
+        <div class="stat-card"><div class="stat-label">✦ SHINY SPECIES</div><div class="stat-number shiny-num" id="stat-shiny">0</div><div class="stat-foot">A separate shiny collection</div></div>
+        <div class="stat-card"><div class="stat-label">◈ EVOLUTION GOALS</div><div class="stat-number" id="stat-goals">0</div><div class="stat-foot" id="stat-goals-foot">0 ready based on entered candy</div></div>
+      </div>
+      <div class="two-column"><div class="panel"><div class="panel-title"><div><h2>Start here</h2><p>Four tools for your daily GO routine</p></div></div><div class="feature-grid">
+        <button class="feature-card" data-page="dex"><span class="feature-ico mint">▦</span><strong>National Pokédex</strong><small>Search all 1,025 indexed species</small><span class="go-arrow">↗</span></button>
+        <button class="feature-card" data-page="shiny"><span class="feature-ico gold">✦</span><strong>Shiny collection</strong><small>Keep shiny and normal catches separate</small><span class="go-arrow">↗</span></button>
+        <button class="feature-card" data-page="planner"><span class="feature-ico violet">◈</span><strong>Candy planner</strong><small>Count missing Candy toward your goals</small><span class="go-arrow">↗</span></button>
+        <button class="feature-card" data-page="storage"><span class="feature-ico coral">⚙</span><strong>Storage cleaner</strong><small>Copy safe-to-review GO search strings</small><span class="go-arrow">↗</span></button>
+      </div></div><div class="panel progress-panel"><div class="panel-title"><div><h2>Region progress</h2><p>Caught species by debut generation</p></div></div><div id="region-progress"></div><div class="panel-hint">This is the National Pokédex, not a list of species currently released in Pokémon GO.</div></div></div>
+    </section>
+
+    <section class="page" id="page-dex" aria-label="National Pokédex">
+      <div class="section-intro"><div class="eyebrow">SMART POKÉDEX</div><h1>Catch them <span>all.</span></h1><p>Mark Pokémon as caught, add them to your shiny collection, and search across nine generations.</p></div>
+      <div class="panel dex-panel"><div class="filter-bar"><label class="field grow"><span>SEARCH</span><input type="search" id="dex-search" placeholder="Name or National Dex number…" autocomplete="off"></label><label class="field"><span>GENERATION</span><select id="dex-gen"><option value="all">All generations</option><option value="1">Kanto · Gen 1</option><option value="2">Johto · Gen 2</option><option value="3">Hoenn · Gen 3</option><option value="4">Sinnoh · Gen 4</option><option value="5">Unova · Gen 5</option><option value="6">Kalos · Gen 6</option><option value="7">Alola · Gen 7</option><option value="8">Galar/Hisui · Gen 8</option><option value="9">Paldea · Gen 9</option></select></label><label class="field"><span>STATUS</span><select id="dex-status"><option value="all">All</option><option value="caught">Caught</option><option value="missing">Not caught</option><option value="shiny">Shiny</option></select></label></div><div class="results-head"><span id="dex-count">0 Pokémon</span><span>Tap ✓ to mark caught, ✦ for shiny</span></div><div class="pokemon-grid" id="dex-grid"></div><div class="load-container"><button class="btn ghost-btn" id="dex-more">Load more Pokémon ↓</button></div></div>
+    </section>
+
+    <section class="page" id="page-shiny" aria-label="Shiny collection">
+      <div class="section-intro"><div class="eyebrow golden">SHINY HUNTER</div><h1>A little <span>sparkle.</span></h1><p>Shiny Pokémon have their own checklist. Marking a shiny also marks its species as caught.</p></div>
+      <div class="stats-grid shiny-stats"><div class="stat-card"><div class="stat-label">SHINY SPECIES RECORDED</div><div class="stat-number shiny-num" id="shiny-total">0</div></div><div class="stat-card"><div class="stat-label">SHINY RATE IN YOUR SPECIES CHECKLIST</div><div class="stat-number" id="shiny-progress">0%</div></div></div>
+      <div class="panel dex-panel"><div class="filter-bar"><label class="field grow"><span>SEARCH</span><input type="search" id="shiny-search" placeholder="Search Pokémon…" autocomplete="off"></label><label class="field"><span>GENERATION</span><select id="shiny-gen"><option value="all">All generations</option><option value="1">Kanto</option><option value="2">Johto</option><option value="3">Hoenn</option><option value="4">Sinnoh</option><option value="5">Unova</option><option value="6">Kalos</option><option value="7">Alola</option><option value="8">Galar/Hisui</option><option value="9">Paldea</option></select></label><label class="field"><span>VIEW</span><select id="shiny-status"><option value="all">All species</option><option value="shiny">My shinies</option><option value="missing">Not shiny yet</option></select></label></div><div class="results-head"><span id="shiny-count">0 Pokémon</span><span>✦ = Shiny registered</span></div><div class="pokemon-grid" id="shiny-grid"></div><div class="load-container"><button class="btn ghost-btn" id="shiny-more">Load more Pokémon ↓</button></div></div>
+    </section>
+
+    <section class="page" id="page-planner" aria-label="Evolution and Candy planner">
+      <div class="section-intro"><div class="eyebrow purple">EVOLUTION LAB</div><h1>Plan the next <span>evolution.</span></h1><p>Choose a Pokémon, set your Candy requirement, and track how much more you need. Special items and Buddy tasks go in Notes.</p></div>
+      <div class="two-column planner-layout"><div class="panel"><div class="panel-title"><div><h2 id="goal-form-title">New evolution goal</h2><p>Costs are editable — always confirm in Pokémon GO.</p></div></div>
+        <form id="goal-form" autocomplete="off">
+          <label class="field"><span>POKÉMON</span><input id="goal-species" list="species-options" required placeholder="e.g. Magikarp or #129"><datalist id="species-options"></datalist></label>
+          <label class="field"><span>TARGET EVOLUTION</span><input id="goal-target" maxlength="80" required placeholder="e.g. Gyarados"></label>
+          <div class="form-grid"><label class="field"><span>CANDY NEEDED</span><input id="goal-cost" type="number" min="0" max="1000000" required placeholder="400"></label><label class="field"><span>CANDY YOU HAVE</span><input id="goal-have" type="number" min="0" max="1000000" required value="0"></label></div>
+          <label class="field"><span>ITEM / QUEST / NOTES (OPTIONAL)</span><textarea id="goal-note" rows="3" maxlength="300" placeholder="Evolution item, buddy distance, trade bonus, special condition…"></textarea></label>
+          <div class="form-actions"><button type="submit" class="btn main-btn" id="goal-submit">Add evolution goal</button><button type="button" class="btn ghost-btn hidden" id="cancel-edit">Cancel edit</button></div>
+        </form>
+        <div class="tip-card">◈ Select a name such as Magikarp, Eevee or Bulbasaur to see an editable example evolution cost. Not all evolutions use Candy alone.</div>
+      </div><div class="panel"><div class="panel-title"><div><h2>Your candy goals</h2><p id="goals-summary">No goals yet</p></div></div><div id="goals-list" class="goals-list"></div></div></div>
+    </section>
+
+    <section class="page" id="page-storage" aria-label="Storage cleaner">
+      <div class="section-intro"><div class="eyebrow coral">STORAGE HELPER</div><h1>Find space. <span>Keep favorites.</span></h1><p>Build a Pokémon GO inventory search query, copy it, and inspect the matches yourself. This app never transfers Pokémon.</p></div>
+      <div class="two-column storage-layout"><div class="panel"><div class="panel-title"><div><h2>Build a review filter</h2><p>Start conservative, then customize</p></div></div>
+      <div class="option-set"><h3>Narrow results</h3><label class="toggle-row"><input type="checkbox" id="storage-low" checked><span>Exclude 3★ and 4★ appraisal Pokémon <small>Shows likely 0–2★ candidates</small></span></label><label class="toggle-row"><input type="checkbox" id="storage-recent"><span>Only caught within 24 hours (age0)</span></label></div>
+      <div class="option-set"><h3>Exclude special Pokémon</h3><div class="toggle-grid"><label class="toggle-row"><input type="checkbox" id="ex-shiny" checked><span>Shiny</span></label><label class="toggle-row"><input type="checkbox" id="ex-legendary" checked><span>Legendary</span></label><label class="toggle-row"><input type="checkbox" id="ex-mythical" checked><span>Mythical</span></label><label class="toggle-row"><input type="checkbox" id="ex-lucky" checked><span>Lucky</span></label><label class="toggle-row"><input type="checkbox" id="ex-favorite" checked><span>Favorite</span></label><label class="toggle-row"><input type="checkbox" id="ex-shadow" checked><span>Shadow</span></label><label class="toggle-row"><input type="checkbox" id="ex-costume" checked><span>Costume</span></label><label class="toggle-row"><input type="checkbox" id="ex-defender" checked><span>Gym defender</span></label></div></div><button class="btn ghost-btn" id="storage-reset">Restore conservative defaults</button></div>
+      <div class="panel query-panel"><div class="panel-title"><div><h2>Ready to paste</h2><p>Pokémon GO → Pokémon Storage → search</p></div></div><div class="query-value" id="storage-query" aria-live="polite"></div><div class="query-buttons"><button class="btn main-btn" id="copy-query">Copy GO search string</button><button class="btn ghost-btn" id="share-query">Share text</button></div><div class="hint-warning"><strong>⚠ Review matches before transferring.</strong><p>GO search filters are not a guarantee that a Pokémon is disposable. Check event backgrounds, PvP IVs, legacy moves, trades and sentimental Pokémon individually.</p></div><div class="presets"><h3>Useful searches</h3><button class="preset" data-query="evolvenew">New evolutions <span>evolvenew ⧉</span></button><button class="preset" data-query="tradeevolve">Trade evolutions <span>tradeevolve ⧉</span></button><button class="preset" data-query="4*">Perfect appraisal <span>4* ⧉</span></button><button class="preset" data-query="shiny">Your shinies <span>shiny ⧉</span></button></div></div></div>
+    </section>
+
+    <section class="page" id="page-settings" aria-label="Settings and backup">
+      <div class="section-intro"><div class="eyebrow">LOCAL FIRST</div><h1>Keep your <span>progress.</span></h1><p>Your collection and candy goals are saved automatically on this device. Make a JSON backup before uninstalling, clearing app data or changing phones.</p></div>
+      <div class="panel settings-panel"><h2>Backup & restore</h2><p>Export your DexQuest GO checklist, Shiny collection and Candy goals into one JSON file. Restore it on any DexQuest GO installation.</p><div class="form-actions"><button class="btn main-btn" id="export-button">↓ Export JSON backup</button><button class="btn ghost-btn" id="import-button">↑ Import JSON backup</button><input type="file" accept=".json,application/json" id="import-file" class="visually-hidden"></div><div class="tip-card">FireRed and Pokémon GO are different games: old FireRed catches are <strong>not</strong> imported as Pokémon GO catches.</div><hr><h2>Reset DexQuest GO</h2><p>Deletes local GO catch marks, shiny marks and evolution goals. Export a backup first.</p><button class="btn danger-btn" id="reset-button">Clear all local data</button><hr><h2>About the Pokédex</h2><p>Includes 1,025 National Dex species from Generations 1–9. This is a generic species catalog, <strong>not</strong> a verified list of Pokémon already released or shiny-eligible in GO. Region variants, costumes, forms and individual Pokémon are not separately tracked in v1.0.</p><p>Independent fan project, not endorsed by Niantic, Scopely or The Pokémon Company. Optional Pokémon artwork requires internet; tracking, planning and saved data work offline.</p><p class="tiny-note">DexQuest GO 1.0.0 · Android project source included · All changes saved locally</p></div>
+    </section>
+  </main>
+</div>
+<nav class="bottom-nav" aria-label="Mobile navigation"><button data-page="home" class="selected"><span>⌂</span><small>Home</small></button><button data-page="dex"><span>▦</span><small>Dex</small></button><button data-page="shiny"><span>✦</span><small>Shiny</small></button><button data-page="planner"><span>◈</span><small>Candy</small></button><button data-page="storage"><span>⚙</span><small>Storage</small></button></nav>
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
