@@ -56,8 +56,5 @@ jobs:
         run: |
           if ! gh release view dexquest-go-v1.0 >/dev/null 2>&1; then
             cp app/build/outputs/apk/debug/app-debug.apk DexQuest-GO-v1.0-debug.apk
-            gh release create dexquest-go-v1.0 DexQuest-GO-v1.0-debug.apk \
-              --title 'DexQuest GO v1.0 (Android APK)' \\
-              --notes 'Offline-first unofficial Pokémon GO companion: Pokédex, Shinies, Candy Planner and Storage Cleaner. This is a debug-signed APK, intended for sideloading and testing.' \\
-              --target "$GITHUB_SHA"
+            gh release create dexquest-go-v1.0 DexQuest-GO-v1.0-debug.apk --title 'DexQuest GO v1.0 (Android APK)' --notes 'Unofficial offline-first Pokémon GO companion: Pokédex, Shinies, Candy Planner, and Storage Cleaner. Debug-signed APK for sideloading.' --target "$GITHUB_SHA"
           fi
